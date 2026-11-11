@@ -1,0 +1,78 @@
+{
+  "$schema": "https://kkm-ui.dev/schema.json",
+  "name": "kkm-ui",
+  "components": {
+    "skills-physics": {
+      "name": "skills-physics",
+      "title": "Skills Physics",
+      "description": "Interactive Matter.js physics playground where logos/icons drop with gravity, bounce off boundaries, and can be dragged & tossed.",
+      "dependencies": ["matter-js"],
+      "devDependencies": ["@types/matter-js"],
+      "targetFile": "SkillsPhysics.tsx",
+      "registryFile": "skills-physics.tsx"
+    },
+    "website-carousel": {
+      "name": "website-carousel",
+      "title": "Website 3D Carousel",
+      "description": "3D Coverflow momentum carousel with velocity-based flick inertia, infinite clone looping, and keyboard navigation.",
+      "dependencies": ["framer-motion", "@tabler/icons-react", "clsx"],
+      "devDependencies": [],
+      "targetFile": "WebsiteCarousel.tsx",
+      "registryFile": "website-carousel.tsx"
+    },
+    "comet-card": {
+      "name": "comet-card",
+      "title": "Comet Card",
+      "description": "Realistic 3D spring tilt card with mouse-following perspective rotation and lighting glare reflection effect.",
+      "dependencies": ["framer-motion", "clsx", "tailwind-merge"],
+      "devDependencies": [],
+      "targetFile": "CometCard.tsx",
+      "registryFile": "comet-card.tsx"
+    },
+    "encrypted-text": {
+      "name": "encrypted-text",
+      "title": "Encrypted Text Reveal",
+      "description": "Cyberpunk-style scrambled text decrypt animation that reveals readable text upon scrolling into view.",
+      "dependencies": ["framer-motion", "clsx", "tailwind-merge"],
+      "devDependencies": [],
+      "targetFile": "EncryptedText.tsx",
+      "registryFile": "encrypted-text.tsx"
+    },
+    "tilt-card": {
+      "name": "tilt-card",
+      "title": "3D Tilt Card Wrapper",
+      "description": "Smooth physics-based 3D tilt interaction wrapper for any card or child element.",
+      "dependencies": ["framer-motion", "clsx", "tailwind-merge"],
+      "devDependencies": [],
+      "targetFile": "Tilt3DCard.tsx",
+      "registryFile": "tilt-card.tsx"
+    },
+    "tooltip": {
+      "name": "tooltip",
+      "title": "Spring Animated Tooltip",
+      "description": "Smooth spring-animated cursor-tracking tooltip with viewport boundary awareness.",
+      "dependencies": ["framer-motion", "clsx", "tailwind-merge"],
+      "devDependencies": [],
+      "targetFile": "Tooltip.tsx",
+      "registryFile": "tooltip.tsx"
+    },
+    "logo-3d": {
+      "name": "logo-3d",
+      "title": "Interactive 3D GLB Model",
+      "description": "Three.js / React Three Fiber interactive 3D model canvas with auto-rotation, hover deceleration, and drag orbit control.",
+      "dependencies": ["three", "@react-three/fiber", "@react-three/drei"],
+      "devDependencies": ["@types/three"],
+      "targetFile": "Logo3D.tsx",
+      "registryFile": "logo-3d.tsx"
+    },
+    "progressive-blur": {
+      "name": "progressive-blur",
+      "title": "Progressive Backdrop Blur",
+      "description": "Multi-stop gradient progressive backdrop blur overlay for glassmorphism headers and cards.",
+      "dependencies": ["framer-motion", "clsx", "tailwind-merge"],
+      "devDependencies": [],
+      "targetFile": "ProgressiveBlur.tsx",
+      "registryFile": "progressive-blur.tsx"
+    }
+  }
+}

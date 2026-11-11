@@ -1,0 +1,21 @@
+{
+  "name": "kkm-ui",
+  "version": "1.0.0",
+  "description": "Custom interactive 3D and physics UI components CLI",
+  "main": "bin/cli.js",
+  "bin": {
+    "kkm-ui": "./bin/cli.js"
+  },
+  "keywords": [
+    "react",
+    "nextjs",
+    "ui",
+    "components",
+    "physics",
+    "threejs",
+    "framer-motion",
+    "matter-js"
+  ],
+  "author": "Khaing Kyaw Min",
+  "license": "MIT"
+}
