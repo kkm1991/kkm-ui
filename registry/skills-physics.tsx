@@ -22,9 +22,9 @@ const WALL_THICKNESS = 60;
 
 export default function SkillsPhysics({
   items,
-  iconSize = 100,
+  iconSize: propIconSize,
   className = "",
-  minHeight = 340,
+  minHeight = 350,
   gravity = 1,
   bounciness = 0.45,
 }: SkillsPhysicsProps) {
@@ -32,52 +32,50 @@ export default function SkillsPhysics({
   const engineRef = useRef<Matter.Engine | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
   const wallsRef = useRef<Matter.Body[]>([]);
+  const bodiesRef = useRef<Matter.Body[]>([]);
   const rafRef = useRef<number>(0);
   const iconRefs = useRef<(HTMLDivElement | null)[]>([]);
   const mouseConstraintRef = useRef<Matter.MouseConstraint | null>(null);
+  const [currentIconSize, setCurrentIconSize] = useState(propIconSize || 80);
+  const iconSizeRef = useRef(propIconSize || 80);
   const [, setIsReady] = useState(false);
 
-  const iconRadius = iconSize / 2;
-
-  const createWalls = useCallback(
-    (width: number, height: number) => {
-      return [
-        // bottom (slightly raised so icons don't sink)
-        Matter.Bodies.rectangle(
-          width / 2,
-          height - 8 + WALL_THICKNESS / 2,
-          width + WALL_THICKNESS * 2,
-          WALL_THICKNESS,
-          { isStatic: true, render: { visible: false } }
-        ),
-        // left
-        Matter.Bodies.rectangle(
-          -WALL_THICKNESS / 2,
-          height / 2,
-          WALL_THICKNESS,
-          height * 2,
-          { isStatic: true, render: { visible: false } }
-        ),
-        // right
-        Matter.Bodies.rectangle(
-          width + WALL_THICKNESS / 2,
-          height / 2,
-          WALL_THICKNESS,
-          height * 2,
-          { isStatic: true, render: { visible: false } }
-        ),
-        // top (prevents logos from flying out when tossed)
-        Matter.Bodies.rectangle(
-          width / 2,
-          -WALL_THICKNESS / 2,
-          width + WALL_THICKNESS * 2,
-          WALL_THICKNESS,
-          { isStatic: true, render: { visible: false } }
-        ),
-      ];
-    },
-    []
-  );
+  const createWalls = useCallback((width: number, height: number) => {
+    return [
+      // bottom
+      Matter.Bodies.rectangle(
+        width / 2,
+        height - 8 + WALL_THICKNESS / 2,
+        width + WALL_THICKNESS * 2,
+        WALL_THICKNESS,
+        { isStatic: true, render: { visible: false } }
+      ),
+      // left
+      Matter.Bodies.rectangle(
+        -WALL_THICKNESS / 2,
+        height / 2,
+        WALL_THICKNESS,
+        height * 2,
+        { isStatic: true, render: { visible: false } }
+      ),
+      // right
+      Matter.Bodies.rectangle(
+        width + WALL_THICKNESS / 2,
+        height / 2,
+        WALL_THICKNESS,
+        height * 2,
+        { isStatic: true, render: { visible: false } }
+      ),
+      // top
+      Matter.Bodies.rectangle(
+        width / 2,
+        -WALL_THICKNESS / 2,
+        width + WALL_THICKNESS * 2,
+        WALL_THICKNESS,
+        { isStatic: true, render: { visible: false } }
+      ),
+    ];
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -85,6 +83,21 @@ export default function SkillsPhysics({
 
     const width = container.clientWidth;
     const height = container.clientHeight;
+
+    // Calculate responsive icon size if not explicitly locked by prop
+    const calculatedSize = propIconSize
+      ? propIconSize
+      : width < 480
+      ? 64
+      : width < 768
+      ? 76
+      : width < 1024
+      ? 86
+      : 94;
+
+    setCurrentIconSize(calculatedSize);
+    iconSizeRef.current = calculatedSize;
+    const radius = calculatedSize / 2;
 
     // 1. Create engine
     const engine = Matter.Engine.create({
@@ -97,16 +110,26 @@ export default function SkillsPhysics({
     wallsRef.current = walls;
     Matter.Composite.add(engine.world, walls);
 
-    // 3. Create bodies for each item
-    const columns = Math.min(items.length, Math.floor(width / (iconSize + 30))) || 1;
+    // 3. Create bodies with safe responsive spawn coordinates
+    const columns = Math.max(
+      2,
+      Math.min(items.length, Math.floor((width - 20) / (calculatedSize + 12)))
+    );
+    const totalRows = Math.ceil(items.length / columns);
+    const availableHeight = height - calculatedSize - 30;
+    const rowGap =
+      totalRows > 1
+        ? Math.min(calculatedSize + 14, Math.max(30, availableHeight / (totalRows - 1)))
+        : 0;
+
     const bodies = items.map((_, i) => {
       const col = i % columns;
       const row = Math.floor(i / columns);
-      const x = (width / (columns + 1)) * (col + 1) + (Math.random() - 0.5) * 30;
-      const y = iconRadius + 10 + row * (iconSize + 10) + Math.random() * 10;
+      const x = (width / (columns + 1)) * (col + 1) + (Math.random() - 0.5) * 16;
+      const y = radius + 15 + row * rowGap;
 
-      return Matter.Bodies.rectangle(x, y, iconSize, iconSize, {
-        chamfer: { radius: 16 },
+      return Matter.Bodies.rectangle(x, y, calculatedSize, calculatedSize, {
+        chamfer: { radius: Math.round(calculatedSize * 0.18) },
         restitution: bounciness,
         friction: 0.3,
         frictionAir: 0.02,
@@ -114,6 +137,7 @@ export default function SkillsPhysics({
         label: `item-${i}`,
       });
     });
+    bodiesRef.current = bodies;
     Matter.Composite.add(engine.world, bodies);
 
     // 4. Mouse / Touch Drag Overlay
@@ -148,12 +172,13 @@ export default function SkillsPhysics({
 
     // 6. Animation Frame Loop
     const animate = () => {
+      const curRadius = iconSizeRef.current / 2;
       bodies.forEach((body, i) => {
         const el = iconRefs.current[i];
         if (!el) return;
         const { x, y } = body.position;
         const angle = body.angle;
-        el.style.transform = `translate(${x - iconRadius}px, ${y - iconRadius}px) rotate(${angle}rad)`;
+        el.style.transform = `translate(${x - curRadius}px, ${y - curRadius}px) rotate(${angle}rad)`;
         el.style.opacity = "1";
       });
       rafRef.current = requestAnimationFrame(animate);
@@ -174,6 +199,14 @@ export default function SkillsPhysics({
       const newWalls = createWalls(newWidth, newHeight);
       wallsRef.current = newWalls;
       Matter.Composite.add(engine.world, newWalls);
+
+      const curRadius = iconSizeRef.current / 2;
+      bodiesRef.current.forEach((body) => {
+        Matter.Body.setPosition(body, {
+          x: Math.max(curRadius + 5, Math.min(newWidth - curRadius - 5, body.position.x)),
+          y: Math.max(curRadius + 5, Math.min(newHeight - curRadius - 15, body.position.y)),
+        });
+      });
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
@@ -189,12 +222,12 @@ export default function SkillsPhysics({
       overlayCanvas.remove();
       setIsReady(false);
     };
-  }, [items, iconSize, gravity, bounciness, iconRadius, createWalls]);
+  }, [items, propIconSize, gravity, bounciness, createWalls]);
 
   return (
     <div
       ref={containerRef}
-      className={`relative overflow-hidden w-full ${className}`}
+      className={`relative overflow-hidden w-full min-h-[380px] sm:min-h-[350px] md:min-h-[330px] ${className}`}
       style={{ minHeight }}
     >
       {items.map((item, i) => (
@@ -205,8 +238,8 @@ export default function SkillsPhysics({
           }}
           className="absolute top-0 left-0 pointer-events-none select-none"
           style={{
-            width: iconSize,
-            height: iconSize,
+            width: currentIconSize,
+            height: currentIconSize,
             opacity: 0,
             willChange: "transform",
           }}
@@ -216,13 +249,13 @@ export default function SkillsPhysics({
             <img
               src={item.src}
               alt={item.alt || item.label || "logo"}
-              width={iconSize * 0.52}
-              height={iconSize * 0.52}
+              width={Math.round(currentIconSize * 0.52)}
+              height={Math.round(currentIconSize * 0.52)}
               className="object-contain pointer-events-none"
               draggable={false}
             />
             {item.label && (
-              <span className="text-[10px] font-medium text-white/70 leading-none truncate max-w-[90%] text-center">
+              <span className="text-[9px] sm:text-[10px] font-medium text-white/70 leading-none truncate max-w-[85%] text-center">
                 {item.label}
               </span>
             )}
