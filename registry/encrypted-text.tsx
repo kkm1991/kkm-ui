@@ -56,15 +56,16 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
   const animationFrameRef = useRef<number | null>(null);
   const startTimeRef = useRef<number>(0);
   const lastFlipTimeRef = useRef<number>(0);
-  const scrambleCharsRef = useRef<string[]>(
-    text ? generateGibberishPreservingSpaces(text, charset).split("") : []
-  );
-  const [scrambleChars, setScrambleChars] = useState<string[]>(
-    text ? generateGibberishPreservingSpaces(text, charset).split("") : []
-  );
+  const scrambleCharsRef = useRef<string[]>([]);
+  const [scrambleChars, setScrambleChars] = useState<string[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    if (!isInView) return;
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isInView || !isMounted) return;
 
     const initial = text
       ? generateGibberishPreservingSpaces(text, charset)
@@ -123,7 +124,7 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
       if (animationFrameRef.current !== null)
         cancelAnimationFrame(animationFrameRef.current);
     };
-  }, [isInView, text, revealDelayMs, charset, flipDelayMs]);
+  }, [isInView, isMounted, text, revealDelayMs, charset, flipDelayMs]);
 
   if (!text) return null;
 
@@ -140,7 +141,7 @@ export const EncryptedText: React.FC<EncryptedTextProps> = ({
           ? char
           : char === " "
           ? " "
-          : scrambleChars[index] ?? generateRandomCharacter(charset);
+          : scrambleChars[index] || (isMounted ? generateRandomCharacter(charset) : "•");
 
         return (
           <span
