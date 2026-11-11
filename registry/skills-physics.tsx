@@ -7,6 +7,7 @@ export interface PhysicsItem {
   src: string;
   label?: string;
   alt?: string;
+  invertInDark?: boolean;
 }
 
 export interface SkillsPhysicsProps {
@@ -230,38 +231,49 @@ export default function SkillsPhysics({
       className={`relative overflow-hidden w-full min-h-[380px] sm:min-h-[350px] md:min-h-[330px] ${className}`}
       style={{ minHeight }}
     >
-      {items.map((item, i) => (
-        <div
-          key={`${item.label || item.src}-${i}`}
-          ref={(el) => {
-            iconRefs.current[i] = el;
-          }}
-          className="absolute top-0 left-0 pointer-events-none select-none"
-          style={{
-            width: currentIconSize,
-            height: currentIconSize,
-            opacity: 0,
-            willChange: "transform",
-          }}
-        >
-          <div className="w-full h-full rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 flex flex-col items-center justify-center gap-1 shadow-lg shadow-black/20 hover:border-white/20 transition-colors">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={item.src}
-              alt={item.alt || item.label || "logo"}
-              width={Math.round(currentIconSize * 0.52)}
-              height={Math.round(currentIconSize * 0.52)}
-              className="object-contain pointer-events-none"
-              draggable={false}
-            />
-            {item.label && (
-              <span className="text-[9px] sm:text-[10px] font-medium text-white/70 leading-none truncate max-w-[85%] text-center">
-                {item.label}
-              </span>
-            )}
+      {items.map((item, i) => {
+        const shouldInvertInDark =
+          item.invertInDark ||
+          (item.label && item.label.toLowerCase().includes("next")) ||
+          (item.label && item.label.toLowerCase().includes("wordpress")) ||
+          item.src.toLowerCase().includes("next") ||
+          item.src.toLowerCase().includes("wordpress");
+
+        return (
+          <div
+            key={`${item.label || item.src}-${i}`}
+            ref={(el) => {
+              iconRefs.current[i] = el;
+            }}
+            className="absolute top-0 left-0 pointer-events-none select-none"
+            style={{
+              width: currentIconSize,
+              height: currentIconSize,
+              opacity: 0,
+              willChange: "transform",
+            }}
+          >
+            <div className="w-full h-full rounded-2xl bg-neutral-900/[0.04] dark:bg-white/5 backdrop-blur-sm border border-neutral-900/10 dark:border-white/10 flex flex-col items-center justify-center gap-1 shadow-lg shadow-black/5 dark:shadow-black/20 hover:border-neutral-900/20 dark:hover:border-white/20 transition-all">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={item.src}
+                alt={item.alt || item.label || "logo"}
+                width={Math.round(currentIconSize * 0.52)}
+                height={Math.round(currentIconSize * 0.52)}
+                className={`object-contain pointer-events-none transition-all ${
+                  shouldInvertInDark ? "dark:invert" : ""
+                }`}
+                draggable={false}
+              />
+              {item.label && (
+                <span className="text-[9px] sm:text-[10px] font-medium text-neutral-800 dark:text-white/90 leading-none truncate max-w-[85%] text-center transition-colors">
+                  {item.label}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
